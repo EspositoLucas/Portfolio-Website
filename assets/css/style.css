@@ -1230,6 +1230,9 @@ textarea.form-input::-webkit-resizer { display: none; }
   #RESPONSIVE
 \*-----------------------------------*/
 
+/**
+ * responsive larger than 350px screen
+ */
 
 @media (min-width: 350px) {
 
