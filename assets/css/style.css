@@ -3,14 +3,6 @@
 \*-----------------------------------*/
 
 
-/**
- * copyright 2022 @codewithsadee
- */
-
-
-
-
-
 /*-----------------------------------*\
   #CUSTOM PROPERTY
 \*-----------------------------------*/
@@ -1902,4 +1894,62 @@ textarea.form-input::-webkit-resizer { display: none; }
 
   .timeline-text { max-width: 700px; }
 
+}
+
+/* ... existing code ... */
+
+.pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.pagination-button {
+  background: var(--border-gradient-onyx);
+  border: none;
+  border-radius: 8px;
+  color: var(--light-gray);
+  cursor: pointer;
+  padding: 8px 12px;
+  transition: 0.25s ease;
+}
+
+.pagination-button:hover {
+  background: var(--border-gradient-onyx-2);
+  color: var(--orange-yellow-crayola);
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-numbers {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pagination-number {
+  background: var(--border-gradient-onyx);
+  border: none;
+  border-radius: 8px;
+  color: var(--light-gray);
+  cursor: pointer;
+  padding: 8px 12px;
+  transition: 0.25s ease;
+}
+
+.pagination-number.active {
+  background: var(--border-gradient-onyx-2);
+  color: var(--orange-yellow-crayola);
+}
+
+.project-item {
+  display: none;
+}
+
+.project-item.visible {
+  display: block;
 }
