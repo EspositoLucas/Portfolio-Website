@@ -36,13 +36,8 @@ for (let i = 0; i < testimonialsItem.length; i++) {
   testimonialsItem[i].addEventListener("click", function () {
     modalImg.src = this.querySelector("[data-testimonials-avatar]").src;
     modalImg.alt = this.querySelector("[data-testimonials-avatar]").alt;
-    modalTitle.innerHTML = this.querySelector(
-      "[data-testimonials-title]"
-    ).innerHTML;
-    modalText.innerHTML = this.querySelector(
-      "[data-testimonials-text]"
-    ).innerHTML;
-
+    modalTitle.innerHTML = this.querySelector("[data-testimonials-title]").innerHTML;
+    modalText.innerHTML = this.querySelector("[data-testimonials-text]").innerHTML;
     testimonialsModalFunc();
   });
 }
@@ -73,33 +68,128 @@ for (let i = 0; i < selectItems.length; i++) {
 
 // filter variables
 const filterItems = document.querySelectorAll("[data-filter-item]");
+const itemsPerPage = 6;
+let currentPage = 1;
 
-const filterFunc = function (selectedValue) {
-  for (let i = 0; i < filterItems.length; i++) {
-    if (selectedValue === "all") {
-      filterItems[i].classList.add("active");
-    } else if (selectedValue === filterItems[i].dataset.category) {
-      filterItems[i].classList.add("active");
-    } else {
-      filterItems[i].classList.remove("active");
+function setupPagination() {
+    const paginationContainer = document.querySelector('.pagination-container');
+    const prevButton = document.getElementById('prev-button');
+    const nextButton = document.getElementById('next-button');
+    const paginationNumbers = document.querySelector('.pagination-numbers');
+
+    function updatePagination(items) {
+        const totalPages = Math.ceil(items.length / itemsPerPage);
+        
+        // Mostrar paginación si hay más de 6 items
+        paginationContainer.style.display = items.length <= itemsPerPage ? 'none' : 'flex';
+
+        // Actualizar números de página
+        paginationNumbers.innerHTML = '';
+        for (let i = 1; i <= totalPages; i++) {
+            const pageNumber = document.createElement('button');
+            pageNumber.className = `pagination-number ${i === currentPage ? 'active' : ''}`;
+            pageNumber.textContent = i;
+            pageNumber.addEventListener('click', () => {
+                currentPage = i;
+                showPage(items);
+                updatePaginationButtons(items);
+            });
+            paginationNumbers.appendChild(pageNumber);
+        }
     }
-  }
-};
 
-// add event in all filter button items for large screen
-let lastClickedBtn = filterBtn[0];
+    function showPage(items) {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
 
-for (let i = 0; i < filterBtn.length; i++) {
-  filterBtn[i].addEventListener("click", function () {
-    let selectedValue = this.innerText.toLowerCase();
-    selectValue.innerText = this.innerText;
-    filterFunc(selectedValue);
+        items.forEach((item, index) => {
+            if (index >= startIndex && index < endIndex) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    }
 
-    lastClickedBtn.classList.remove("active");
-    this.classList.add("active");
-    lastClickedBtn = this;
-  });
+    function updatePaginationButtons(items) {
+        const totalPages = Math.ceil(items.length / itemsPerPage);
+        prevButton.disabled = currentPage === 1;
+        nextButton.disabled = currentPage === totalPages;
+
+        document.querySelectorAll('.pagination-number').forEach(btn => {
+            btn.classList.toggle('active', parseInt(btn.textContent) === currentPage);
+        });
+    }
+
+    const filterFunc = function (selectedValue) {
+        currentPage = 1;
+        let filteredItems = [];
+
+        if (selectedValue === "all") {
+            filteredItems = Array.from(filterItems);
+            filterItems.forEach(item => item.classList.add("active"));
+        } else {
+            filterItems.forEach(item => {
+                if (selectedValue === item.dataset.category) {
+                    item.classList.add("active");
+                    filteredItems.push(item);
+                } else {
+                    item.classList.remove("active");
+                }
+            });
+        }
+
+        showPage(filteredItems);
+        updatePagination(filteredItems);
+        updatePaginationButtons(filteredItems);
+    };
+
+    // Event listeners para navegación
+    prevButton.addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            const currentCategory = document.querySelector('[data-filter-btn].active').innerText.toLowerCase();
+            const filteredItems = currentCategory === "all" 
+                ? Array.from(filterItems)
+                : Array.from(filterItems).filter(item => item.dataset.category === currentCategory);
+            showPage(filteredItems);
+            updatePaginationButtons(filteredItems);
+        }
+    });
+
+    nextButton.addEventListener('click', () => {
+        const currentCategory = document.querySelector('[data-filter-btn].active').innerText.toLowerCase();
+        const filteredItems = currentCategory === "all" 
+            ? Array.from(filterItems)
+            : Array.from(filterItems).filter(item => item.dataset.category === currentCategory);
+        const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+        
+        if (currentPage < totalPages) {
+            currentPage++;
+            showPage(filteredItems);
+            updatePaginationButtons(filteredItems);
+        }
+    });
+
+    // Event listeners para botones de filtro
+    for (let i = 0; i < filterBtn.length; i++) {
+        filterBtn[i].addEventListener("click", function () {
+            let selectedValue = this.innerText.toLowerCase();
+            selectValue.innerText = this.innerText;
+            filterFunc(selectedValue);
+
+            lastClickedBtn.classList.remove("active");
+            this.classList.add("active");
+            lastClickedBtn = this;
+        });
+    }
+
+    // Inicialización con "all"
+    filterFunc("all");
 }
+
+// let para el último botón clickeado
+let lastClickedBtn = filterBtn[0];
 
 // contact form variables
 const form = document.querySelector("[data-form]");
@@ -109,7 +199,6 @@ const formBtn = document.querySelector("[data-form-btn]");
 // add event to all form input field
 for (let i = 0; i < formInputs.length; i++) {
   formInputs[i].addEventListener("input", function () {
-    // check form validation
     if (form.checkValidity()) {
       formBtn.removeAttribute("disabled");
     } else {
@@ -136,130 +225,6 @@ for (let i = 0; i < navigationLinks.length; i++) {
       }
     }
   });
-}
-
-const itemsPerPage = 6;
-let currentPage = 1;
-
-// Función para manejar la paginación
-function setupPagination() {
-    const paginationContainer = document.querySelector('.pagination-container');
-    const prevButton = document.getElementById('prev-button');
-    const nextButton = document.getElementById('next-button');
-    const paginationNumbers = document.querySelector('.pagination-numbers');
-
-    function updatePagination(items) {
-        const totalPages = Math.ceil(items.length / itemsPerPage);
-        
-        // Mostrar u ocultar la paginación según la categoría
-        if (items.length <= itemsPerPage) {
-            paginationContainer.style.display = 'none';
-        } else {
-            paginationContainer.style.display = 'flex';
-        }
-
-        // Actualizar números de página
-        paginationNumbers.innerHTML = '';
-        for (let i = 1; i <= totalPages; i++) {
-            const pageNumber = document.createElement('button');
-            pageNumber.className = `pagination-number ${i === currentPage ? 'active' : ''}`;
-            pageNumber.textContent = i;
-            pageNumber.addEventListener('click', () => {
-                currentPage = i;
-                showPage(items);
-                updatePaginationButtons(items);
-            });
-            paginationNumbers.appendChild(pageNumber);
-        }
-    }
-
-    function showPage(items) {
-        items.forEach((item, index) => {
-            if (currentPage === 1 && index < itemsPerPage) {
-                item.classList.add('active');
-            } else if (index >= (currentPage - 1) * itemsPerPage && index < currentPage * itemsPerPage) {
-                item.classList.add('active');
-            } else {
-                item.classList.remove('active');
-            }
-        });
-    }
-
-    function updatePaginationButtons(items) {
-        const totalPages = Math.ceil(items.length / itemsPerPage);
-        prevButton.disabled = currentPage === 1;
-        nextButton.disabled = currentPage === totalPages;
-
-        document.querySelectorAll('.pagination-number').forEach(btn => {
-            btn.classList.toggle('active', parseInt(btn.textContent) === currentPage);
-        });
-    }
-
-    // Modificar la función de filtrado existente
-    const filterFunc = function (selectedValue) {
-        currentPage = 1; // Reset a la primera página al cambiar filtro
-        const filteredItems = [];
-
-        for (let i = 0; i < filterItems.length; i++) {
-            if (selectedValue === "all") {
-                filterItems[i].classList.add("active");
-                paginationContainer.style.display = 'none';
-            } else if (selectedValue === filterItems[i].dataset.category) {
-                filteredItems.push(filterItems[i]);
-            } else {
-                filterItems[i].classList.remove("active");
-            }
-        }
-
-        if (selectedValue !== "all") {
-            showPage(filteredItems);
-            updatePagination(filteredItems);
-            updatePaginationButtons(filteredItems);
-        }
-    };
-
-    // Event listeners para los botones de navegación
-    prevButton.addEventListener('click', () => {
-        if (currentPage > 1) {
-            currentPage--;
-            const currentCategory = document.querySelector('[data-filter-btn].active').innerText.toLowerCase();
-            const filteredItems = Array.from(filterItems).filter(item => 
-                item.dataset.category === currentCategory
-            );
-            showPage(filteredItems);
-            updatePaginationButtons(filteredItems);
-        }
-    });
-
-    nextButton.addEventListener('click', () => {
-        const currentCategory = document.querySelector('[data-filter-btn].active').innerText.toLowerCase();
-        const filteredItems = Array.from(filterItems).filter(item => 
-            item.dataset.category === currentCategory
-        );
-        const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
-        
-        if (currentPage < totalPages) {
-            currentPage++;
-            showPage(filteredItems);
-            updatePaginationButtons(filteredItems);
-        }
-    });
-
-    // Reemplazar el event listener existente para los botones de filtro
-    for (let i = 0; i < filterBtn.length; i++) {
-        filterBtn[i].addEventListener("click", function () {
-            let selectedValue = this.innerText.toLowerCase();
-            selectValue.innerText = this.innerText;
-            filterFunc(selectedValue);
-
-            lastClickedBtn.classList.remove("active");
-            this.classList.add("active");
-            lastClickedBtn = this;
-        });
-    }
-
-    // Inicialización
-    filterFunc("all");
 }
 
 // Inicializar la paginación cuando el DOM esté cargado
